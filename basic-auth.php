@@ -30,7 +30,7 @@ function json_basic_auth_handler( $user ) {
 
 	// Check that we're trying to authenticate
 	if ( !isset( $_SERVER['PHP_AUTH_USER'] ) ) {
-		if (strpos ($_SERVER['REDIRECT_URL'], '/wp-json') !== false) {
+		if (strpos ($_SERVER['REDIRECT_URI'], '/wp-json') !== false) {
 			send_http_auth_headers ();
 		}
 
