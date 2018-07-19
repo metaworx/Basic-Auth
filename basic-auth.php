@@ -30,11 +30,9 @@ function json_basic_auth_handler( $user ) {
 
 	// Check that we're trying to authenticate
 	if ( !isset( $_SERVER['PHP_AUTH_USER'] ) ) {
-		if (strpos ($_SERVER['PHP_SELF'], 'wp-cron.php') !== false) {
-			return $user;
+		if (strpos ($_SERVER['REDIRECT_URL'], '/wp-json') !== false) {
+			send_http_auth_headers ();
 		}
-
-		send_http_auth_headers ();
 
 		return $user;
 	}
