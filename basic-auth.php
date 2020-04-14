@@ -4,9 +4,19 @@
  * Description: Basic Authentication handler for the JSON API, used for development and debugging purposes
  * Author: WordPress API Team
  * Author URI: https://github.com/WP-API
- * Version: 0.1
+ * Version: 0.2
  * Plugin URI: https://github.com/WP-API/Basic-Auth
  */
+
+function send_http_auth_headers() {
+	header( 'HTTP/1.1 401 Unauthorized' );
+	header( 'HTTP/1.0 401 Unauthorized' );
+	header( 'WWW-Authenticate: Basic realm="' . get_bloginfo( 'name' ) . '"' );
+
+	echo __( 'Please speak to an administrator for access to the this feature.' );
+
+	exit;
+}
 
 function json_basic_auth_handler( $user ) {
 	global $wp_json_basic_auth_error;
@@ -19,7 +29,11 @@ function json_basic_auth_handler( $user ) {
 	}
 
 	// Check that we're trying to authenticate
-	if ( ! isset( $_SERVER['PHP_AUTH_USER'] ) && ! isset( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) ) {
+	if ( ! isset( $_SERVER['PHP_AUTH_USER'] ) ) {
+		if ( strpos( $_SERVER['REDIRECT_URI'], '/wp-json' ) !== false ) {
+			send_http_auth_headers();
+		}
+
 		return $user;
 	}
 
