@@ -19,23 +19,23 @@ function json_basic_auth_handler( $user ) {
 	}
 
 	// Check that we're trying to authenticate
-	if ( !isset( $_SERVER['PHP_AUTH_USER'] ) && !isset( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) ) {
+	if ( ! isset( $_SERVER['PHP_AUTH_USER'] ) && ! isset( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) ) {
 		return $user;
 	}
 
 	$username = $_SERVER['PHP_AUTH_USER'];
-  $password = $_SERVER['PHP_AUTH_PW'];
+	$password = $_SERVER['PHP_AUTH_PW'];
 
-  if( !$username || !$password ){
-    $authorization = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
-    preg_match('/^Basic (.*)/', $authorization, $matches);
-    $base64 = $matches[1];
-    list($username, $password) = explode(':', base64_decode($base64));
-  }
+	if ( ! $username || ! $password ) {
+		$authorization = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
+		preg_match( '/^Basic (.*)/', $authorization, $matches );
+		$base64 = $matches[1];
+		list( $username, $password ) = explode( ':', base64_decode( $base64 ) );
+	}
 
-  if( !$username || !$password ){
-    return $user;
-  }
+	if ( ! $username || ! $password ) {
+		return $user;
+	}
 
 	/**
 	 * In multi-site, wp_authenticate_spam_check filter is run on authentication. This filter calls
@@ -45,13 +45,13 @@ function json_basic_auth_handler( $user ) {
 	 */
 	remove_filter( 'determine_current_user', 'json_basic_auth_handler', 20 );
 
-	$user = get_user_by('login', $username);
+	$user = get_user_by( 'login', $username );
 
-	if ( !$user ) {
-		$user = get_user_by('email', $username);
+	if ( ! $user ) {
+		$user = get_user_by( 'email', $username );
 	}
 
-	if ( !$user ) {
+	if ( ! $user ) {
 		return null;
 	}
 
