@@ -4,7 +4,7 @@
  * Description: Basic Authentication handler for the JSON API, used for development and debugging purposes
  * Author: WordPress API Team
  * Author URI: https://github.com/WP-API
- * Version: 0.1
+ * Version: 0.1.2
  * Plugin URI: https://github.com/WP-API/Basic-Auth
  */
 
@@ -17,6 +17,12 @@ function json_basic_auth_handler( $user ) {
 	if ( ! empty( $user ) ) {
 		return $user;
 	}
+
+	if (isset($_SERVER['HTTP_AUTHORIZATION']) && $_SERVER['HTTP_AUTHORIZATION']) {
+            list($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']) = explode(':' , base64_decode(substr($_SERVER['HTTP_AUTHORIZATION'], 6)));
+        } elseif (isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION']) && $_SERVER['REDIRECT_HTTP_AUTHORIZATION']) {
+            list($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']) = explode(':' , base64_decode(substr($_SERVER['REDIRECT_HTTP_AUTHORIZATION'], 6)));
+        }
 
 	// Check that we're trying to authenticate
 	if ( ! isset( $_SERVER['PHP_AUTH_USER'] ) && ! isset( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) ) {
