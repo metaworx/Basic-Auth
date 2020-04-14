@@ -28,14 +28,10 @@ function json_basic_auth_handler( $user ) {
 		return $user;
 	}
 
-	if (isset($_SERVER['HTTP_AUTHORIZATION']) && $_SERVER['HTTP_AUTHORIZATION']) {
-            list($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']) = explode(':' , base64_decode(substr($_SERVER['HTTP_AUTHORIZATION'], 6)));
-        } elseif (isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION']) && $_SERVER['REDIRECT_HTTP_AUTHORIZATION']) {
-            list($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']) = explode(':' , base64_decode(substr($_SERVER['REDIRECT_HTTP_AUTHORIZATION'], 6)));
-        }
-
 	// Check that we're trying to authenticate
-	if ( ! isset( $_SERVER['PHP_AUTH_USER'] ) ) {
+	if ( ! isset( $_SERVER['PHP_AUTH_USER'] )
+		&& ! isset( $_SERVER['HTTP_AUTHORIZATION'] )
+		&& ! isset( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) ) {
 		if ( strpos( $_SERVER['REDIRECT_URI'], '/wp-json' ) !== false ) {
 			send_http_auth_headers();
 		}
@@ -47,10 +43,17 @@ function json_basic_auth_handler( $user ) {
 	$password = $_SERVER['PHP_AUTH_PW'];
 
 	if ( ! $username || ! $password ) {
-		$authorization = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
-		preg_match( '/^Basic (.*)/', $authorization, $matches );
-		$base64 = $matches[1];
-		list( $username, $password ) = explode( ':', base64_decode( $base64 ) );
+		$authorization = null;
+
+		if ( isset( $_SERVER['HTTP_AUTHORIZATION'] ) && $_SERVER['HTTP_AUTHORIZATION'] ) {
+			$authorization = $_SERVER['HTTP_AUTHORIZATION'];
+		} elseif ( isset( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) && $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) {
+			$authorization = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
+		}
+
+		if ( preg_match( '/^Basic (.*)/', $authorization, $matches ) ) {
+			list( $username, $password ) = explode( ':', base64_decode( $matches[1] ) );
+		}
 	}
 
 	if ( ! $username || ! $password ) {
