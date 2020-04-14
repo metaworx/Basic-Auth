@@ -23,8 +23,13 @@ function json_basic_auth_handler( $user ) {
 
 	$wp_json_basic_auth_error = null;
 
-	// Don't authenticate twice
-	if ( ! empty( $user ) ) {
+	/**
+	 * Don't authenticate twice if X-WP-FORCE-REAUTH header is not set or if it is false
+	 * This allow you to re-authenticate user which might be required when working with node-wpapi
+	 * (such as in case of allowing user to change his password using REST API)
+	 */
+	$forceReauth = ( isset( $_SERVER['HTTP_X_WP_FORCE_REAUTH'] ) && $_SERVER['HTTP_X_WP_FORCE_REAUTH'] );
+	if ( ! empty( $user ) && ! $forceReauth ) {
 		return $user;
 	}
 
